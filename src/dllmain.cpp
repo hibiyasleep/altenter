@@ -8,29 +8,22 @@ namespace {
 
 HMODULE g_self = nullptr;
 
-bool IsArknightsProcess() {
-  wchar_t path[MAX_PATH] = {};
-  const DWORD n = GetModuleFileNameW(nullptr, path, MAX_PATH);
-  if (n == 0 || n >= MAX_PATH) {
-    return false;
-  }
-  const wchar_t* base = path;
-  for (const wchar_t* p = path; *p; ++p) {
-    if (*p == L'\\' || *p == L'/') {
-      base = p + 1;
-    }
-  }
-  return lstrcmpiW(base, L"Arknights.exe") == 0;
-}
-
 DWORD WINAPI WorkerThread(LPVOID) {
+  // Keep LoadConfig after this wait: helper processes such as
+  // UnityCrashHandler64.exe also load this DLL, and LogInit would delete the
+  // game's log from inside them.
+  const HWND hwnd = WaitForUnityWindow();
+  if (!hwnd) {
+    return 0;
+  }
+
   Config config{};
   if (!LoadConfig(g_self, &config)) {
     return 1;
   }
 
-  Log(L"altenter worker started");
-  WindowHookRun(config);
+  Log(L"altenter worker started; found Unity window hwnd=%p", hwnd);
+  WindowHookRun(config, hwnd);
   return 0;
 }
 
@@ -40,9 +33,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID) {
   if (reason == DLL_PROCESS_ATTACH) {
     g_self = module;
     DisableThreadLibraryCalls(module);
-    if (!IsArknightsProcess()) {
-      return TRUE;
-    }
     HANDLE thread = CreateThread(nullptr, 0, WorkerThread, nullptr, 0, nullptr);
     if (thread) {
       CloseHandle(thread);

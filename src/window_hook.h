@@ -4,4 +4,5 @@
 
 #include <Windows.h>
 
-void WindowHookRun(const Config& config);
+HWND WaitForUnityWindow();
+void WindowHookRun(const Config& config, HWND hwnd);

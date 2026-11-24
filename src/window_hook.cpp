@@ -125,10 +125,7 @@ bool SubclassWindow(HWND hwnd) {
 
 }  // namespace
 
-void WindowHookRun(const Config& config) {
-  g_config = config;
-
-  Log(L"Waiting for UnityWndClass window...");
+HWND WaitForUnityWindow() {
   HWND hwnd = nullptr;
   for (int i = 0; i < 600 && !hwnd; ++i) {
     hwnd = FindUnityWindow();
@@ -136,11 +133,11 @@ void WindowHookRun(const Config& config) {
       Sleep(100);
     }
   }
+  return hwnd;
+}
 
-  if (!hwnd) {
-    Log(L"Timed out waiting for Unity window");
-    return;
-  }
+void WindowHookRun(const Config& config, HWND hwnd) {
+  g_config = config;
 
   if (!SubclassWindow(hwnd)) {
     return;
