@@ -149,7 +149,7 @@ void WriteDefaultIni(const std::wstring& path) {
       "[general]\r\n"
       "; Apply borderless shortly after the Unity window appears.\r\n"
       "; Use Windowed mode in the game settings (not exclusive fullscreen).\r\n"
-      "start_borderless = true\r\n"
+      "start_borderless = false\r\n"
       "; Write altenter.log next to this ini.\r\n"
       "log = false\r\n";
   HANDLE h = CreateFileW(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW,
